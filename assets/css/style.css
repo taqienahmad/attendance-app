@@ -444,7 +444,7 @@ sup {
 }
 
 a {
-    color: #4680ff;
+    color: #ffffff;
     text-decoration: none;
     background-color: transparent;
 }
@@ -22374,6 +22374,7 @@ pre[class*=language-]:before {
     transition: background 0.3s ease-out;
     background-image: linear-gradient(to top, #4680ff 2px, rgba(255, 255, 255, 0) 2px);
 }
+
 
 .nav-tabs .nav-link.active {
     background-size: 100% 100%, 100% 100%;

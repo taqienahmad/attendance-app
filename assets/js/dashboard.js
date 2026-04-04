@@ -58,7 +58,7 @@ async function loadData() {
     const row = `
       <tr>
         <td>${item.nis}</td>
-        <td>${item.name}</td>
+        <td>${item.nama}</td>
         <td>${item.kelas}</td>        
         <td>${formattedTime}</td>
         <td>${statusBadge}</td>
@@ -128,7 +128,7 @@ async function exportExcel() {
 
   const formatted = data.map(item => ({
     NIS: item.nis,
-    Nama: item.name,
+    Nama: item.nama,
     Kelas: item.kelas,    
     Waktu: formatWIB(item.time), // ✅ FIX DISINI
     Status: item.status

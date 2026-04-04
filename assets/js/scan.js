@@ -35,8 +35,8 @@ async function loadEmployees() {
   employees = {};
 
   data.forEach(item => {
-    employees[item.nis] = {
-      name: item.name,
+    employees[String(item.nis).trim()] = {
+      nama: item.nama,
       kelas: item.kelas
     };
   });
@@ -76,14 +76,14 @@ function playBeep(type = "IN") {
 }
 
 // ========================
-// GET MODE
+// GET MODE (FIXED)
 // ========================
 function getMode() {
   return document.querySelector('input[name="mode"]:checked').value;
 }
 
 // ========================
-// 🔥 LOGIC 1 JAM (CORE)
+// LOGIC STATUS
 // ========================
 async function determineStatus(nis) {
   const { data, error } = await supabaseClient
@@ -104,36 +104,34 @@ async function determineStatus(nis) {
   const lastTime = new Date(last.time);
   const now = new Date();
 
-const diffMinutes = (now - lastTime) / (1000 * 60);
+  const diffMinutes = (now - lastTime) / (1000 * 60);
 
-if (last.status === "IN") {
-  if (diffMinutes < 60) {
+  if (last.status === "IN") {
+    if (diffMinutes < 60) {
+      const remainingMinutes = Math.ceil(60 - diffMinutes);
 
-    const remainingMinutes = Math.ceil(60 - diffMinutes);
-    const minutes = remainingMinutes;
+      resultEl.innerHTML = `
+        <div style="font-size:28px; color:red;">
+          ❌ Belum bisa logout<br>
+          Tunggu ${remainingMinutes} menit lagi
+        </div>
+      `;
 
-    resultEl.innerHTML = `
-      <div style="font-size:28px; color:red;">
-        ❌ Belum bisa logout<br>
-        Tunggu ${minutes} menit lagi
-      </div>
-    `;
-
-    return null;
+      return null;
+    }
+    return "OUT";
   }
-  return "OUT";
-}
 
   return "IN";
 }
 
 // ========================
-// SAVE TO DATABASE
+// SAVE
 // ========================
-async function saveAttendance(nis, name, kelas, status) {
+async function saveAttendance(nis, nama, kelas, status) {
   const { error } = await supabaseClient
     .from("attendance")
-    .insert([{ nis, name, kelas, status }]);
+    .insert([{ nis, nama, kelas, status }]);
 
   if (error) {
     console.error("❌ Error:", error);
@@ -143,18 +141,55 @@ async function saveAttendance(nis, name, kelas, status) {
 }
 
 // ========================
-// SCAN RESULT
+// GET STUDENT (FIXED)
+// ========================
+async function getStudent(nis) {
+  const cleanNis = String(nis).trim();
+
+  console.log("🔍 Cari NIS:", cleanNis);
+
+  const { data, error } = await supabaseClient
+    .from("students")
+    .select("*")
+    .eq("nis", cleanNis)
+    .single();
+
+  if (error || !data) {
+    console.error("❌ Student tidak ditemukan:", cleanNis);
+    return null;
+  }
+
+  return data;
+}
+
+// ========================
+// SCAN RESULT (FIXED TOTAL)
 // ========================
 async function onScanSuccess(decodedText) {
-  if (decodedText === lastScan) return;
 
-  lastScan = decodedText;
+  console.log("📸 RAW QR:", decodedText);
+
+  let scannedNis;
+
+  try {
+    const parsed = JSON.parse(decodedText);
+    scannedNis = String(parsed.nis).trim();
+  } catch (e) {
+    // kalau bukan JSON (fallback)
+    scannedNis = String(decodedText).trim();
+  }
+
+  console.log("✅ NIS HASIL PARSE:", scannedNis);
+
+  if (scannedNis === lastScan) return;
+
+  lastScan = scannedNis;
 
   setTimeout(() => {
     lastScan = null;
-  }, 5000); // anti spam
+  }, 5000);
 
-  const student = await getStudent(decodedText);
+  const student = await getStudent(scannedNis);
 
   if (!student) {
     resultEl.innerHTML = `
@@ -165,7 +200,7 @@ async function onScanSuccess(decodedText) {
     return;
   }
 
-  const name = student.name;
+  const nama = student.nama;
   const kelas = student.kelas;
 
   const mode = getMode();
@@ -173,43 +208,26 @@ async function onScanSuccess(decodedText) {
   let status;
 
   if (mode === "AUTO") {
-    status = await determineStatus(decodedText);
-
-    if (!status) return; // stop kalau belum 5 jam
+    status = await determineStatus(scannedNis);
+    if (!status) return;
   } else {
     status = mode;
   }
 
-  // ========================
-  // DATE DISPLAY
-  // ========================
   const now = new Date();
   const date = now.toLocaleDateString("id-ID");
   const time = now.toLocaleTimeString("en-GB");
 
-  const datetime = `${date}  ${time}`;
-
-  // ========================
-  // RESULT UI
-  // ========================
   resultEl.innerHTML = `
-    <div style="font-size:20px;">${name} (${status})</div>
+    <div style="font-size:20px;">${nama} (${status})</div>
     <div style="font-size:20px;">Kelas: ${kelas}</div>
-    <div style="font-size:20px; margin-top:10px;">${datetime}</div>
+    <div style="font-size:20px;">${date} ${time}</div>
   `;
-
-  resultEl.style.color = status === "IN" ? "#22c55e" : "#ef4444";
 
   playBeep(status);
 
-  // ========================
-  // SAVE
-  // ========================
-  saveAttendance(decodedText, name, kelas, status);
+  await saveAttendance(scannedNis, nama, kelas, status);
 
-  // ========================
-  // RESET
-  // ========================
   setTimeout(() => {
     resultEl.innerHTML = "Please Scan QRcode";
     resultEl.style.color = "black";
@@ -217,43 +235,29 @@ async function onScanSuccess(decodedText) {
 }
 
 // ========================
-// START CAMERA
+// START CAMERA (SAFE)
 // ========================
 function startSelectedCamera() {
-  // Stop camera kalau sudah jalan
   if (html5QrCode) {
-    html5QrCode.stop().catch(err => {
-      console.log("Stop error:", err);
-    });
+    html5QrCode.stop().catch(() => {});
   }
 
-  // Init ulang scanner
   html5QrCode = new Html5Qrcode("reader");
 
-  // 🔥 WAJIB: trigger permission camera dulu (biar tidak silent fail di HP)
   navigator.mediaDevices.getUserMedia({ video: true })
     .then(() => {
-
       html5QrCode.start(
-        { facingMode: "environment" }, // 🔥 kamera belakang
+        { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: 250, height: 250 }, // lebih fleksibel di HP
-          aspectRatio: 1.0
+          qrbox: { width: 250, height: 250 }
         },
-        onScanSuccess,
-
-        // error handler (biar bisa debug)
-        (errorMessage) => {
-          // ini normal muncul terus saat scan, jadi jangan alert
-          // console.log("Scan error:", errorMessage);
-        }
+        onScanSuccess
       );
-
     })
     .catch(err => {
-      console.error("❌ Tidak bisa akses kamera:", err);
-      alert("Tidak bisa akses kamera. Pastikan izin kamera sudah diaktifkan.");
+      console.error("❌ Kamera error:", err);
+      alert("Tidak bisa akses kamera");
     });
 }
 
@@ -277,8 +281,6 @@ function loadCameras() {
         cameraSelect.appendChild(option);
       });
 
-      cameraSelect.selectedIndex = 0;
-
       setTimeout(() => {
         startSelectedCamera();
       }, 500);
@@ -288,26 +290,10 @@ function loadCameras() {
     });
 }
 
-async function getStudent(nis) {
-  const { data, error } = await supabaseClient
-    .from("students")
-    .select("*")
-    .eq("nis", nis)
-    .single();
-
-  if (error) {
-    console.error("❌ Student tidak ditemukan:", error);
-    return null;
-  }
-
-  return data;
-}
-
-
 // ========================
 // INIT
 // ========================
 window.onload = async () => {
-  await loadEmployees(); // 🔥 WAJIB dulu
+  await loadEmployees();
   loadCameras();
 };

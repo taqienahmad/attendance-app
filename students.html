@@ -17,7 +17,10 @@
 
     <!-- LIB -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>    
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     
 
@@ -63,7 +66,7 @@
                                 <li><a href="scan.html">Scan Engine</a></li>
                                 <li><a href="table.html">Attendance</a></li>                                
                                 <li><a href="register.html">Registration</a></li>
-                                <li><a href="students.html">Student Information</a></li>                                   
+                                <li><a href="students.html">Student Information</a></li>                                 
                                 <!-- <li><a href="bc_badges.html">Badges</a></li>
                                 <li><a href="bc_breadcrumb-pagination.html">Breadcrumb & paggination</a></li>
                                 <li><a href="bc_card.html">Cards</a></li>
@@ -119,57 +122,47 @@
               <h5 class="m-b-10">Summary</h5>
             </div>
             <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="table.html"><i class="feather icon-box"></i></a></li>
-                <li class="breadcrumb-item"><a href="#!">Attendance</a></li>
+                <li class="breadcrumb-item"><a href="students.html"><i class="feather icon-box"></i></a></li>
+                <li class="breadcrumb-item"><a href="#!">Data Siswa</a></li>
             </ul>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-4"><div class="card"><div class="card-body">
-        <h6>Total Scan</h6>
-        <h2 id="totalScan">0</h2>
-      </div></div></div>
-      <div class="col-md-4"><div class="card"><div class="card-body">
-        <h6>Login (IN)</h6>
-        <h2 id="totalIn">0</h2>
-      </div></div></div>
-      <div class="col-md-4"><div class="card"><div class="card-body">
-        <h6>Logout (OUT)</h6>
-        <h2 id="totalOut">0</h2>
-      </div></div></div>
-    </div>
-
-    <div class="card mt-3">
+    <div class="card">
       <div class="card-body">
+
         <table class="table">
           <thead>
             <tr>
               <th>NIS</th>
               <th>Nama</th>
               <th>Kelas</th>
-              <th>Waktu</th>
-              <th>Status</th>
+              <th>QR Code</th>
+              <th>Action</th>
             </tr>
           </thead>
-          <tbody id="attendanceTable"></tbody>
+          <tbody id="studentTable"></tbody>
         </table>
+        <button onclick="downloadAllQR()" class="btn btn-primary mb-2">
+        Download Semua QR
+        </button>
       </div>
     </div>
+
   </div>
 </div>
 
+<!-- REQUIRED JS -->
+<script src="assets/js/vendor-all.min.js"></script>
+<script src="assets/js/plugins/bootstrap.min.js"></script>
+<script src="assets/js/ripple.js"></script>
+<script src="assets/js/pcoded.min.js"></script>
 
-    <!-- Required Js -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="assets/js/dashboard.js"></script>     
-    <script src="assets/js/vendor-all.min.js"></script>
-    <script src="assets/js/plugins/bootstrap.min.js"></script>
-    <script src="assets/js/ripple.js"></script>
-    <script src="assets/js/pcoded.min.js"></script>
+<!-- CUSTOM JS (PALING AKHIR) -->
+<script src="assets/js/students.js"></script>
+
 
 <!-- Apex Chart -->
 <script src="assets/js/plugins/apexcharts.min.js"></script>
