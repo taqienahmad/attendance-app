@@ -39,7 +39,7 @@ const { data: admin, error: adminError } = await supabaseClient
   localStorage.setItem("user", JSON.stringify(data.user));
 
   // REDIRECT
-  window.location.href = "../dashboard.html";
+  window.location.href = "./index.html";
 }
 
 console.log("USER ID:", data.user.id);
