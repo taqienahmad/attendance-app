@@ -30,6 +30,11 @@ const { data: admin, error: adminError } = await supabaseClient
   .eq("id", data.user.id)
   .maybeSingle(); // 🔥 INI FIX
 
+  console.log("USER ID:", data.user.id);
+  console.log("ADMIN DATA:", admin);
+  console.log("ADMIN ERROR:", adminError);
+
+
   if (adminError || !admin) {
     errorMsg.innerText = "❌ Anda bukan admin!";
     return;
@@ -39,9 +44,6 @@ const { data: admin, error: adminError } = await supabaseClient
   localStorage.setItem("user", JSON.stringify(data.user));
 
   // REDIRECT
-  window.location.href = "./index.html";
+  window.location.href = "/attendance/dashboard.html";
 }
 
-console.log("USER ID:", data.user.id);
-console.log("ADMIN DATA:", admin);
-console.log("ADMIN ERROR:", adminError);
