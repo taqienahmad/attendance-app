@@ -50,27 +50,27 @@
 						</ul>
 					</div>
 				</div>
-                    <ul class="nav pcoded-inner-navbar ">
-                        <li class="nav-item pcoded-menu-caption">
-                            <label>Navigation</label>
-                        </li>
-                        <li class="nav-item">
-                            <a href="dashboard.html" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
-                        </li>
-                        <li class="nav-item pcoded-hasmenu">
-                            <a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-box"></i></span><span class="pcoded-mtext">Summary</span></a>
-                            <ul class="pcoded-submenu">
-                                <li><a href="scan.html">Scan Engine</a></li>
-                                <li><a href="table.html">Attendance</a></li>                                
-                                <li><a href="register.html">Registration</a></li>
-                                <li><a href="students.html">Student Information</a></li>                                   
-                                <!-- <li><a href="bc_badges.html">Badges</a></li>
-                                <li><a href="bc_breadcrumb-pagination.html">Breadcrumb & paggination</a></li>
-                                <li><a href="bc_card.html">Cards</a></li>
-                                <li><a href="bc_collapse.html">Collapse</a></li> -->
-                            </ul>
-                        </li>   
-                    </ul> 								
+          <ul class="nav pcoded-inner-navbar ">
+              <li class="nav-item pcoded-menu-caption">
+                  <label>Navigation</label>
+              </li>
+              <li class="nav-item">
+                  <a href="dashboard.html" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
+              </li>
+              <li class="nav-item pcoded-hasmenu">
+                  <a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-box"></i></span><span class="pcoded-mtext">Summary</span></a>
+                  <ul class="pcoded-submenu">
+                      <li><a href="scan.html">Scan Engine</a></li>
+                      <li><a href="table.html">Attendance</a></li>                                
+                      <li><a href="register.html">Registration</a></li>
+                      <li><a href="students.html">Student Information</a></li>                                   
+                      <!-- <li><a href="bc_badges.html">Badges</a></li>
+                      <li><a href="bc_breadcrumb-pagination.html">Breadcrumb & paggination</a></li>
+                      <li><a href="bc_card.html">Cards</a></li>
+                      <li><a href="bc_collapse.html">Collapse</a></li> -->
+                  </ul>
+              </li>   
+          </ul> 								
 			</div>
 		</div>
 	</nav>
@@ -144,18 +144,20 @@
 
     <div class="card mt-3">
       <div class="card-body">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>NIS</th>
-              <th>Nama</th>
-              <th>Kelas</th>
-              <th>Waktu</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="attendanceTable"></tbody>
-        </table>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>NIS</th>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Waktu</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTable"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
