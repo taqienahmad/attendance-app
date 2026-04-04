@@ -24232,3 +24232,22 @@ div.dtk-focus-alt table.dataTable tbody th.focus {
 .card {
   border-radius: 5px;
 }
+
+
+
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #7246ff, #8f6ff9);
+}
+
+.login-card {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 350px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
