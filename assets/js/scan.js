@@ -220,27 +220,41 @@ async function onScanSuccess(decodedText) {
 // START CAMERA
 // ========================
 function startSelectedCamera() {
-  const selectedId = cameraSelect.value;
-
-  if (!selectedId) {
-    alert("Pilih kamera dulu");
-    return;
-  }
-
+  // Stop camera kalau sudah jalan
   if (html5QrCode) {
-    html5QrCode.stop().catch(() => {});
+    html5QrCode.stop().catch(err => {
+      console.log("Stop error:", err);
+    });
   }
 
+  // Init ulang scanner
   html5QrCode = new Html5Qrcode("reader");
 
-  html5QrCode.start(
-    selectedId,
-    {
-      fps: 10,
-      qrbox: 300
-    },
-    onScanSuccess
-  );
+  // 🔥 WAJIB: trigger permission camera dulu (biar tidak silent fail di HP)
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(() => {
+
+      html5QrCode.start(
+        { facingMode: "environment" }, // 🔥 kamera belakang
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }, // lebih fleksibel di HP
+          aspectRatio: 1.0
+        },
+        onScanSuccess,
+
+        // error handler (biar bisa debug)
+        (errorMessage) => {
+          // ini normal muncul terus saat scan, jadi jangan alert
+          // console.log("Scan error:", errorMessage);
+        }
+      );
+
+    })
+    .catch(err => {
+      console.error("❌ Tidak bisa akses kamera:", err);
+      alert("Tidak bisa akses kamera. Pastikan izin kamera sudah diaktifkan.");
+    });
 }
 
 // ========================
