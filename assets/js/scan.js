@@ -110,12 +110,7 @@ async function determineStatus(nis) {
     if (diffMinutes < 60) {
       const remainingMinutes = Math.ceil(60 - diffMinutes);
 
-      resultEl.innerHTML = `
-        <div style="font-size:28px; color:red;">
-          ❌ Belum bisa logout<br>
-          Tunggu ${remainingMinutes} menit lagi
-        </div>
-      `;
+      showResult("error", `Tunggu ${remainingMinutes} menit lagi`);
 
       return null;
     }
@@ -192,11 +187,7 @@ async function onScanSuccess(decodedText) {
   const student = await getStudent(scannedNis);
 
   if (!student) {
-    resultEl.innerHTML = `
-      <div style="color:red; font-size:28px;">
-        ❌ Siswa tidak terdaftar
-      </div>
-    `;
+    showResult("error", "Siswa tidak terdaftar");
     return;
   }
 
@@ -218,20 +209,21 @@ async function onScanSuccess(decodedText) {
   const date = now.toLocaleDateString("id-ID");
   const time = now.toLocaleTimeString("en-GB");
 
-  resultEl.innerHTML = `
-    <div style="font-size:20px;">${nama} (${status})</div>
-    <div style="font-size:20px;">Kelas: ${kelas}</div>
-    <div style="font-size:20px;">${date} ${time}</div>
-  `;
-
+  showResult(
+    "success",
+    `Absensi ${status}`,
+    nama,
+    kelas
+  );
+  
+  triggerScanEffect();
   playBeep(status);
 
   await saveAttendance(scannedNis, nama, kelas, status);
 
-  setTimeout(() => {
-    resultEl.innerHTML = "Please Scan QRcode";
-    resultEl.style.color = "black";
-  }, 3000);
+    setTimeout(() => {
+      showResult("success", "Ready to Scan");
+    }, 3000);
 }
 
 // ========================
@@ -297,3 +289,56 @@ window.onload = async () => {
   await loadEmployees();
   loadCameras();
 };
+
+function showResult(status, message, nama = "", kelas = "") {
+  const card = document.querySelector(".result-card");
+  const result = document.getElementById("result");
+  const icon = document.getElementById("statusIcon");
+  const time = document.getElementById("scanTime");
+
+  card.classList.remove("success", "error");
+
+  const now = new Date().toLocaleTimeString("id-ID");
+
+  if (status === "success") {
+    card.classList.add("success");
+    icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+  } 
+  else if (status === "error") {
+    card.classList.add("error");
+    icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+  } 
+  else {
+    // DEFAULT SCANNER ICON
+    icon.innerHTML = '<i class="bi bi-qr-code-scan"></i>';
+  }
+
+  result.innerHTML = `
+    <div style="font-size:18px; font-weight:bold;">${message}</div>
+    ${nama ? `<div>${nama}</div>` : ""}
+    ${kelas ? `<div>Kelas: ${kelas}</div>` : ""}
+  `;
+
+  time.textContent = now;
+}
+
+
+function triggerScanEffect() {
+  const frame = document.querySelector(".scanner-frame");
+
+  // FLASH
+  frame.classList.add("flash");
+
+  // SUCCESS (HIJAU)
+  frame.classList.add("success");
+
+  // HAPUS FLASH CEPAT
+  setTimeout(() => {
+    frame.classList.remove("flash");
+  }, 400);
+
+  // BALIK NORMAL
+  setTimeout(() => {
+    frame.classList.remove("success");
+  }, 2000);
+}

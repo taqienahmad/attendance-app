@@ -17,6 +17,7 @@
 
     <!-- LIB -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>    
     
     
@@ -144,6 +145,30 @@
 
     <div class="card mt-3">
       <div class="card-body">
+<div class="row mb-3">
+
+  <div class="col-md-3">
+    <label class="form-label">Start Date</label>
+    <input type="date" id="startDate" class="form-control" onchange="filterData()">
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label">End Date</label>
+    <input type="date" id="endDate" class="form-control" onchange="filterData()">
+  </div>
+
+  <div class="col-md-6 d-flex align-items-end gap-2">
+    <button onclick="resetFilter()" class="btn btn-secondary">
+      Reset
+    </button>
+
+    <button onclick="exportExcel()" class="btn btn-success">
+      Export Excel
+    </button>
+  </div>
+
+</div>
+    
         <div class="table-responsive">
           <table class="table table-striped">
             <thead>
@@ -160,8 +185,10 @@
         </div>
       </div>
     </div>
-  </div>
+  </div>  
 </div>
+
+
 
 
     <!-- Required Js -->

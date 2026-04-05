@@ -37,32 +37,45 @@ async function loadStudents() {
     const qrImage = canvas.toDataURL();
     const safeNama = siswa.nama.replace(/[^a-zA-Z0-9]/g, "_");
 
-    const row = `
-      <tr>
-        <td>${siswa.nis}</td>
-        <td>${siswa.nama}</td>
-        <td>${siswa.kelas}</td>
-        <td><img src="${qrImage}" class="qr-img"/></td>
-        <td>
-          <div class="action-btns">
-            <button class="btn btn-success btn-sm"
-              onclick="downloadQR('${qrImage}','${siswa.nis}_${safeNama}')">
-              Download
-            </button>
+const fotoUrl = siswa.foto
+  ? `https://oeyquqvffipiakozezjw.supabase.co/storage/v1/object/public/student-photo/${siswa.foto}?t=${new Date().getTime()}`
+  : "https://ui-avatars.com/api/?name=+&background=random";
 
-            <button class="btn btn-warning btn-sm"
-              onclick="editSiswa(${siswa.id}, '${siswa.nama}', '${siswa.kelas}')">
-              Edit
-            </button>
 
-            <button class="btn btn-danger btn-sm"
-              onclick="deleteSiswa(${siswa.id})">
-              Hapus
-            </button>
-          </div>
-        </td>
-      </tr>
-    `;
+const row = `
+  <tr>
+    <td>${siswa.nis}</td>
+    <td>${siswa.nama}</td>
+    <td>${siswa.kelas}</td>
+    
+    <td>
+      <img 
+        src="${fotoUrl}" 
+        class="student-photo"
+        onclick="openCamera(${siswa.id}, '${siswa.nis}')"
+      />
+    </td>
+
+    <td><img src="${qrImage}" class="qr-img"/></td>
+
+    <td>
+      <button class="btn btn-success btn-sm"
+        onclick="downloadQR('${qrImage}','${siswa.nis}_${safeNama}')">
+        Download
+      </button>
+
+      <button class="btn btn-warning btn-sm"
+        onclick="editSiswa(${siswa.id}, '${siswa.nis}', '${siswa.nama}', '${siswa.kelas}', '${siswa.foto || ""}')">
+        Edit
+      </button>
+
+      <button class="btn btn-danger btn-sm"
+        onclick="deleteSiswa(${siswa.id})">
+        Hapus
+      </button>
+    </td>
+  </tr>
+`;
 
     table.innerHTML += row;
   }
@@ -100,30 +113,142 @@ async function deleteSiswa(id) {
 // ============================
 // EDIT
 // ============================
-async function editSiswa(id, nama, kelas) {
+async function editSiswa(id, nis, nama, kelas, fotoLama) {
+
   const newNama = prompt("Nama:", nama);
   if (!newNama) return;
 
   const newKelas = prompt("Kelas:", kelas);
   if (!newKelas) return;
 
-  const { error } = await supabaseClient
-    .from("students")
-    .update({
-      nama: newNama,
-      kelas: newKelas
-    })
-    .eq("id", id);
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
 
-  if (error) {
-    alert(error.message);
-    return;
-  }
+  input.onchange = async () => {
+    const file = input.files[0];
 
-  loadStudents();
+    let fotoBaru = fotoLama;
+
+    if (file) {
+      fotoBaru = await uploadPhoto(file, nis); // ✅ sekarang aman
+    }
+
+    const { error } = await supabaseClient
+      .from("students")
+      .update({
+        nama: newNama,
+        kelas: newKelas,
+        foto: fotoBaru
+      })
+      .eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    alert("✅ Data berhasil diupdate");
+    loadStudents();
+  };
+
+  input.click();
 }
 
 // ============================
 // INIT
 // ============================
 loadStudents();
+
+
+// ============================
+// upload photos
+// ============================
+
+async function uploadPhoto(file, nis) {
+  const fileName = `${nis}.jpg`;
+
+  const { error } = await supabaseClient.storage
+    .from("student-photo")
+    .upload(fileName, file, { upsert: true });
+
+  if (error) {
+    alert("Upload gagal!");
+    console.error(error);
+    return null;
+  }
+
+  return fileName;
+}
+
+// ============================
+// script camera
+// ============================
+
+let currentId = null;
+let currentNis = null;
+let cameraStream = null;
+
+async function openCamera(id, nis) {
+  currentId = id;
+  currentNis = nis;
+
+  const modal = document.getElementById("cameraModal");
+  const video = document.getElementById("cameraVideo");
+
+  modal.style.display = "flex";
+
+  cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+  video.srcObject = cameraStream;
+}
+
+function closeCamera() {
+  const modal = document.getElementById("cameraModal");
+  modal.style.display = "none";
+
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+  }
+}
+
+// ============================
+// script camera
+// ============================
+async function capturePhoto() {
+  const video = document.getElementById("cameraVideo");
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0);
+
+  canvas.toBlob(async (blob) => {
+
+    const file = new File([blob], `${currentNis}.jpg`, {
+      type: "image/jpeg"
+    });
+
+    // 🔥 upload ke storage
+    const { error } = await supabaseClient.storage
+      .from("student-photo")
+      .upload(`${currentNis}.jpg`, file, { upsert: true });
+
+    if (error) {
+      alert("Upload gagal!");
+      console.error(error);
+      return;
+    }
+
+    // 🔥 update DB
+    await supabaseClient
+      .from("students")
+      .update({ foto: `${currentNis}.jpg` })
+      .eq("id", currentId);
+
+    closeCamera();
+    loadStudents(); // refresh table
+
+  }, "image/jpeg");
+}

@@ -141,6 +141,7 @@
               <th>NIS</th>
               <th>Nama</th>
               <th>Kelas</th>
+              <th>Foto</th>
               <th>QR Code</th>
               <th>Action</th>
             </tr>
@@ -154,6 +155,19 @@
         </button>
       </div>
     </div>
+
+  </div>
+</div>
+
+<div id="cameraModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000000cc; z-index:9999; justify-content:center; align-items:center;">
+  
+  <div style="background:white; padding:20px; border-radius:10px; text-align:center;">
+    
+    <video id="cameraVideo" autoplay style="width:250px; border-radius:10px;"></video>
+    <br><br>
+    
+    <button onclick="capturePhoto()" class="btn btn-success">Ambil Foto</button>
+    <button onclick="closeCamera()" class="btn btn-danger">Tutup</button>
 
   </div>
 </div>

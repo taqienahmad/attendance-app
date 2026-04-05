@@ -31,7 +31,7 @@ function formatWIB(time) {
 // ========================
 // LOAD DATA
 // ========================
-async function loadData() {
+async function loadData(startDate = null, endDate = null) {
   const { data, error } = await supabaseClient
     .from("attendance")
     .select("*")
@@ -47,7 +47,20 @@ async function loadData() {
 
   let total = 0, totalIn = 0, totalOut = 0;
 
-  data.forEach(item => {
+  let filteredData = data;
+
+  // 🔥 FILTER RANGE
+  if (startDate && endDate) {
+    filteredData = data.filter(item => {
+      const d = new Date(item.time);
+const dateStr = d.toLocaleDateString("en-CA", {
+  timeZone: "Asia/Jakarta"
+});
+      return dateStr >= startDate && dateStr <= endDate;
+    });
+  }
+
+  filteredData.forEach(item => {
     const statusBadge =
       item.status === "IN"
         ? `<span class="badge badge-in">IN</span>`
@@ -81,15 +94,17 @@ async function loadData() {
 // FILTER
 // ========================
 function filterData() {
-  const selectedDate = document.getElementById("filterDate").value;
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
 
-  if (!selectedDate) {
+  if (!startDate || !endDate) {
     loadData();
     return;
   }
 
-  loadData(); // nanti bisa kita upgrade filter server-side
+  loadData(startDate, endDate);
 }
+
 
 // ========================
 // REALTIME LISTENER
@@ -116,6 +131,9 @@ function initRealtime() {
 // EXPORT EXCEL (FIX)
 // ========================
 async function exportExcel() {
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+
   const { data, error } = await supabaseClient
     .from("attendance")
     .select("*")
@@ -126,11 +144,23 @@ async function exportExcel() {
     return;
   }
 
-  const formatted = data.map(item => ({
+  let filtered = data;
+
+  if (startDate && endDate) {
+    filtered = data.filter(item => {
+      const d = new Date(item.time);
+const dateStr = d.toLocaleDateString("en-CA", {
+  timeZone: "Asia/Jakarta"
+});
+      return dateStr >= startDate && dateStr <= endDate;
+    });
+  }
+
+  const formatted = filtered.map(item => ({
     NIS: item.nis,
     Nama: item.nama,
-    Kelas: item.kelas,    
-    Waktu: formatWIB(item.time), // ✅ FIX DISINI
+    Kelas: item.kelas,
+    Waktu: formatWIB(item.time),
     Status: item.status
   }));
 
@@ -138,14 +168,35 @@ async function exportExcel() {
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
 
-  const today = new Date().toISOString().split("T")[0];
-  XLSX.writeFile(workbook, `attendance_${today}.xlsx`);
+  const fileName = startDate && endDate
+    ? `attendance_${startDate}_to_${endDate}.xlsx`
+    : `attendance_all.xlsx`;
+
+  XLSX.writeFile(workbook, fileName);
+}
+
+function resetFilter() {
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Asia/Jakarta"
+  });
+
+  document.getElementById("startDate").value = today;
+  document.getElementById("endDate").value = today;
+
+  loadData(today, today);
 }
 
 // ========================
 // INIT
 // ========================
 window.onload = () => {
-  loadData();
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Asia/Jakarta"
+  });
+
+  document.getElementById("startDate").value = today;
+  document.getElementById("endDate").value = today;
+
+  loadData(today, today);
   initRealtime();
 };

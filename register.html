@@ -147,7 +147,25 @@
               <input type="text" id="nis" class="form-control mb-2" placeholder="NIS" required>
               <input type="text" id="nama" class="form-control mb-2" placeholder="Nama" required>
               <input type="text" id="kelas" class="form-control mb-2" placeholder="Kelas" required>
-
+              <!-- FOTO -->
+              <div class="mb-3">
+                <label>Foto Siswa</label>
+                <!-- PREVIEW -->
+                <div class="text-center mb-2">
+                  <img id="previewPhoto" src="" style="width:100px; height:100px; border-radius:50%; display:none;">
+                </div>
+                <!-- UPLOAD -->
+                <input type="file" id="fotoInput" class="form-control" accept="image/*">
+                <!-- CAMERA -->
+                <button type="button" class="btn btn-secondary mt-2" onclick="startCamera()">
+                  📷 Ambil dari Kamera
+                </button>
+                <!-- VIDEO CAMERA -->
+                <video id="camera" autoplay style="width:100%; display:none;"></video>
+                <button type="button" class="btn btn-success mt-2" onclick="capturePhoto()" style="display:none;" id="btnCapture">
+                  Ambil Foto
+                </button>
+              </div>              
               <button type="submit" class="btn btn-primary">Register & Generate QR</button>
             </form>
 
@@ -160,23 +178,21 @@
 
           </div>
         </div>
+
+        
       </div>
 
       <!-- BULK -->
       <div class="tab-pane fade" id="bulk">
         <div class="card">
           <div class="card-body">
-
             <input type="file" id="excelFile" class="form-control mb-3">
-
             <button id="uploadExcel" class="btn btn-success mt-2">
               Upload Excel
             </button>
-
             <button id="downloadZip" class="btn btn-success mt-2">
                 Download Semua QR (ZIP)
             </button>            
-
           <div class="table-responsive">
             <table class="table table-striped">
               <thead>
