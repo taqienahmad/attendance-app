@@ -236,22 +236,24 @@ function startSelectedCamera() {
 
   html5QrCode = new Html5Qrcode("reader");
 
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(() => {
-      html5QrCode.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 }
-        },
-        onScanSuccess
-      );
-    })
-    .catch(err => {
-      console.error("❌ Kamera error:", err);
-      alert("Tidak bisa akses kamera");
-    });
+  const selectedCameraId = cameraSelect.value;
+
+  html5QrCode.start(
+    selectedCameraId, // ✅ pakai deviceId, bukan facingMode
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 250 }
+    },
+    onScanSuccess
+  ).catch(err => {
+    console.error("❌ Kamera error:", err);
+    alert("Tidak bisa akses kamera");
+  });
 }
+
+cameraSelect.addEventListener("change", () => {
+  startSelectedCamera();
+});
 
 // ========================
 // LOAD CAMERA
@@ -273,9 +275,8 @@ function loadCameras() {
         cameraSelect.appendChild(option);
       });
 
-      setTimeout(() => {
-        startSelectedCamera();
-      }, 500);
+      // ✅ langsung start kamera pertama
+      startSelectedCamera();
     })
     .catch(err => {
       console.error("Camera error:", err);

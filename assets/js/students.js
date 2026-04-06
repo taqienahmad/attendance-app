@@ -241,6 +241,9 @@ async function capturePhoto() {
       return;
     }
 
+
+
+    
     // 🔥 update DB
     await supabaseClient
       .from("students")
