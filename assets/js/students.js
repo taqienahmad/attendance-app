@@ -222,6 +222,20 @@ window.addEventListener("load", () => {
   }
 });
 
+function closeCamera() {
+  console.log("CLOSE JALAN");
+
+  const modal = document.getElementById("cameraModal");
+  modal.style.display = "none";
+
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+}
+// ============================
+// open camera
+// ============================
 async function openCamera(id, nis) {
   currentId = id;
   currentNis = nis;
@@ -231,9 +245,14 @@ async function openCamera(id, nis) {
 
   modal.style.display = "flex";
 
-  if (cameraList.length === 0) {
-    await loadCameraList();
-  }
+  // 🔥 1. buka kamera dulu (trigger permission)
+  const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+  // stop sementara
+  tempStream.getTracks().forEach(track => track.stop());
+
+  // 🔥 2. baru load semua kamera
+  await loadCameraList();
 
   const selectedCamera = document.getElementById("cameraSelect").value;
 
@@ -241,6 +260,7 @@ async function openCamera(id, nis) {
     cameraStream.getTracks().forEach(track => track.stop());
   }
 
+  // 🔥 3. start kamera sesuai pilihan
   cameraStream = await navigator.mediaDevices.getUserMedia({
     video: {
       deviceId: selectedCamera ? { exact: selectedCamera } : undefined
@@ -249,6 +269,9 @@ async function openCamera(id, nis) {
 
   video.srcObject = cameraStream;
 }
+
+
+
 // ============================
 // script camera
 // ============================
@@ -279,7 +302,6 @@ async function capturePhoto() {
       return;
     }
   
-
 
     
     // 🔥 update DB

@@ -161,15 +161,19 @@
 </div>
 
 <div id="cameraModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000000cc; z-index:9999; justify-content:center; align-items:center;">
-  <select id="cameraSelect" class="form-select mb-2"></select>
   <div style="background:white; padding:20px; border-radius:10px; text-align:center;">
-    
-    <video id="cameraVideo" autoplay style="width:250px; border-radius:10px;"></video>
-    <br><br>
-    
+  <video 
+    id="cameraVideo" 
+    autoplay 
+    playsinline
+    style="width:250px; border-radius:10px; pointer-events:none;">
+  </video>
+    <br><br>   
+    <div class="">
     <button onclick="capturePhoto()" class="btn btn-success">Ambil Foto</button>
     <button onclick="closeCamera()" class="btn btn-danger">Tutup</button>
-
+    </div>
+      <select id="cameraSelect" class="form-select mb-2"></select>    
   </div>
 </div>
 
