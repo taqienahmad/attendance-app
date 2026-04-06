@@ -188,6 +188,39 @@ async function uploadPhoto(file, nis) {
 let currentId = null;
 let currentNis = null;
 let cameraStream = null;
+let cameraList = [];
+
+async function loadCameraList() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+
+  cameraList = devices.filter(d => d.kind === "videoinput");
+
+  const select = document.getElementById("cameraSelect");
+  select.innerHTML = "";
+
+  cameraList.forEach((cam, i) => {
+    const option = document.createElement("option");
+    option.value = cam.deviceId;
+    option.text = cam.label || `Camera ${i + 1}`;
+    select.appendChild(option);
+  });
+
+  // default kamera belakang
+  if (cameraList.length > 1) {
+    select.selectedIndex = cameraList.length - 1;
+  }
+}
+
+window.addEventListener("load", () => {
+  const select = document.getElementById("cameraSelect");
+
+  if (select) {
+    select.addEventListener("change", async () => {
+      if (!currentId) return;
+      await openCamera(currentId, currentNis);
+    });
+  }
+});
 
 async function openCamera(id, nis) {
   currentId = id;
@@ -198,19 +231,24 @@ async function openCamera(id, nis) {
 
   modal.style.display = "flex";
 
-  cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
-  video.srcObject = cameraStream;
-}
+  if (cameraList.length === 0) {
+    await loadCameraList();
+  }
 
-function closeCamera() {
-  const modal = document.getElementById("cameraModal");
-  modal.style.display = "none";
+  const selectedCamera = document.getElementById("cameraSelect").value;
 
   if (cameraStream) {
     cameraStream.getTracks().forEach(track => track.stop());
   }
-}
 
+  cameraStream = await navigator.mediaDevices.getUserMedia({
+    video: {
+      deviceId: selectedCamera ? { exact: selectedCamera } : undefined
+    }
+  });
+
+  video.srcObject = cameraStream;
+}
 // ============================
 // script camera
 // ============================
@@ -240,7 +278,7 @@ async function capturePhoto() {
       console.error(error);
       return;
     }
-
+  
 
 
     
